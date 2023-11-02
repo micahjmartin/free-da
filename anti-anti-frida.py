@@ -1,7 +1,12 @@
 """
-https://github.com/hluwa/Patchs
+Sourced from the patch files at https://github.com/hluwa/Patchs
+
+Condensed into one script. This tool needs updated once we get the build working
 """
-import lief
+try:
+    import lief
+except:
+    pass
 import sys
 import random
 import os

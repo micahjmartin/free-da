@@ -7,7 +7,7 @@ import os
 import re
 import shutil
 
-from shipyard import CodePatch, Modifyable
+from shipyard import CodePatch, EZ
 
 class Shipfile:
     Name = "frida-core"
@@ -19,7 +19,8 @@ class Shipfile:
         """
         0001-strongR-frida-string_frida_rpc.patch
         """
-        with Modifyable(file) as f:
+        with EZ(file) as f:
+            # Replace both these strings
             f.replace_all({
                 r'"\"frida:rpc\""': '(string) GLib.Base64.decode("ImZyaWRhOnJwYyI=")',
                 '"frida:rpc"': '(string) GLib.Base64.decode("ZnJpZGE6cnBj=")'
@@ -30,13 +31,8 @@ class Shipfile:
         """
         0002-strongR-frida-io_re_frida_server.patch
         """
-        with Modifyable(file) as f:
-            f.replace_all(
-                {
-                    '"re.frida.server"': "null"
-                },
-                err="hunk #1 failed. Could not replace '{k}'. String not found"
-            )
+        with EZ(file) as f:
+            f.replace('"re.frida.server"', "null", err=True)
             f.reinsert(
                 r"\s+Environment.init\s*\(\);",
                 "\n		DEFAULT_DIRECTORY = GLib.Uuid.string_random();",
@@ -49,7 +45,7 @@ class Shipfile:
         """
         0003-strongR-frida-pipe_linjector.patch
         """
-        with Modifyable(file) as f:
+        with EZ(file) as f:
             f.replace(
                 re.compile(r'\(.+binjector.+self..temp_path..self..id\)'),
                 '("%s/%p%u", self->temp_path, self, self->id)',
@@ -61,7 +57,7 @@ class Shipfile:
         """
         0004-strongR-frida-io_frida_agent_so.patch
         """
-        with Modifyable(file) as f:
+        with EZ(file) as f:
             f.reinsert(
                 r"\s+agent = new AgentDescriptor.*frida-agent-<arch>",
                 "\n\t\t\tvar random_prefix = GLib.Uuid.string_random();",
@@ -79,7 +75,7 @@ class Shipfile:
         """
         0005-strongR-frida-symbol_frida_agent_main.patch
         """
-        with Modifyable(file) as f:
+        with EZ(file) as f:
             f.replace('"frida_agent_main"', '"main"')
 
     @CodePatch(r".*/embed-agent\.sh")
@@ -91,7 +87,7 @@ class Shipfile:
 
         Implement the parts of these patch files that create the anti-anti-frida.py script
         """
-        with Modifyable(file) as f:
+        with EZ(file) as f:
             lines = [
                 '',
                 '  if [ -f "$custom_script" ]; then',
@@ -112,7 +108,7 @@ class Shipfile:
         """
         0008-strongR-frida-protocol_unexpected_command.patch
         """
-        with Modifyable(file) as f:
+        with EZ(file) as f:
             s = 'throw new Error.PROTOCOL ("Unexpected command");'
             f.replace(s, "break; // " + s, err=True)
 
