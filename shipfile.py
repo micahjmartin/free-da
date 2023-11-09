@@ -59,9 +59,8 @@ class Shipfile:
         """
         with EZ(file) as f:
             f.reinsert(
-                r"\s+agent = new AgentDescriptor.*frida-agent-<arch>",
-                "\n\t\t\tvar random_prefix = GLib.Uuid.string_random();",
-                before=True,
+                r"helper.output.connect\s+\(on_output\);\n",
+                "\t\t\trandom_prefix = GLib.Uuid.string_random();\n",
                 err=True
             )
             f.replace(
@@ -78,7 +77,7 @@ class Shipfile:
         with EZ(file) as f:
             f.replace('"frida_agent_main"', '"main"')
 
-    @CodePatch(r".*/embed-agent\.sh")
+    #@CodePatch(r".*/embed-agent\.sh")
     def inject_anti_anti_frida(file):
         """
         0005-strongR-frida-symbol_frida_agent_main.patch
